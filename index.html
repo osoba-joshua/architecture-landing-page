@@ -1,0 +1,853 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Vale & Partners | Architecture & Urban Practice</title>
+<!--[cite: 3] -->
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,400;1,600&family=Manrope:wght@200;300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #eceae4;
+    --text: #1a1a1a;
+    --muted: #737373;
+    --accent: #8b7355;
+    --border: rgba(26, 26, 26, 0.15);
+    
+    --serif: 'Cormorant Garamond', serif;
+    --sans: 'Manrope', sans-serif;
+  }
+  
+  /* Reset & Smooth Scroll Defaults */
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { overflow-x: hidden; width: 100%; }
+  html.lenis { height: auto; }
+  .lenis.lenis-smooth { scroll-behavior: auto; }
+  .lenis.lenis-smooth [data-lenis-prevent] { overscroll-behavior: contain; }
+  .lenis.lenis-stopped { overflow: hidden; }
+  
+  body {
+    background-color: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    overflow-x: hidden;
+    width: 100%;
+    -webkit-font-smoothing: antialiased;
+    cursor: auto;
+  }
+
+  /* Custom Cursor - Desktop Only */
+  @media (hover: hover) and (pointer: fine) {
+    * { cursor: none !important; }
+    .cursor-dot, .cursor-ring {
+      position: fixed;
+      top: 0; left: 0;
+      transform: translate(-50%, -50%);
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 10000;
+    }
+    .cursor-dot {
+      width: 4px; height: 4px;
+      background: var(--text);
+      transition: opacity 0.3s;
+    }
+    .cursor-ring {
+      width: 32px; height: 32px;
+      border: 1px solid var(--text);
+      transition: width 0.4s cubic-bezier(0.16, 1, 0.3, 1), height 0.4s cubic-bezier(0.16, 1, 0.3, 1), background 0.4s, border-color 0.4s;
+      display: flex; justify-content: center; align-items: center;
+    }
+    .cursor-text {
+      font-family: var(--sans);
+      font-size: 0.55rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--bg);
+      opacity: 0;
+      transition: opacity 0.3s;
+      font-weight: 600;
+    }
+    .hovered .cursor-ring { width: 75px; height: 75px; background: var(--text); border-color: transparent; }
+    .hovered .cursor-dot { opacity: 0; }
+    .hovered .cursor-text { opacity: 1; }
+  }
+
+  /* Disable Custom Cursor Entirely on Touch */
+  @media (hover: none), (pointer: coarse) {
+    .cursor-dot, .cursor-ring { display: none !important; }
+  }
+
+  /* Tactile Film Grain Overlay */
+  .noise {
+    position: fixed;
+    top: 0; left: 0; width: 100vw; height: 100vh;
+    pointer-events: none;
+    z-index: 9999;
+    opacity: 0.3;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+  }
+
+  /* Preloader */
+  .loader {
+    position: fixed; inset: 0;
+    background: var(--bg);
+    z-index: 9000;
+    display: flex; flex-direction: column; justify-content: center; align-items: center;
+    padding: 0 5vw; text-align: center;
+  }
+  .loader-brand {
+    font-family: var(--serif);
+    font-size: clamp(2rem, 6vw, 3rem);
+    font-weight: 400;
+    clip-path: polygon(0 100%, 100% 100%, 100% 100%, 0% 100%);
+  }
+  .loader-sub {
+    font-family: var(--sans);
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: var(--muted);
+    margin-top: 1rem;
+    opacity: 0;
+  }
+
+  /* Header */
+  header {
+    position: fixed; top: 0; left: 0; width: 100%;
+    padding: 1.8rem 5vw;
+    display: flex; justify-content: space-between; align-items: center;
+    z-index: 100;
+    mix-blend-mode: multiply;
+  }
+  .brand {
+    font-family: var(--sans); font-weight: 600; font-size: 0.8rem;
+    letter-spacing: 1px; text-transform: uppercase;
+  }
+  nav { display: flex; gap: 2rem; }
+  nav a {
+    text-decoration: none; color: var(--text);
+    font-size: 0.75rem; font-weight: 500;
+    text-transform: uppercase; letter-spacing: 1px;
+    position: relative;
+    padding: 4px 0;
+  }
+
+  /* Common Typography & Section Markers */
+  .section-label {
+    font-family: var(--sans); font-size: 0.75rem;
+    text-transform: uppercase; letter-spacing: 2px;
+    color: var(--muted); font-weight: 500;
+  }
+
+  /* Hero Section */
+  .hero {
+    min-height: 100vh;
+    display: grid; grid-template-columns: 1.2fr 0.8fr;
+    padding: 0 5vw; align-items: center; gap: 4rem;
+  }
+  .hero-text-wrap { z-index: 2; margin-top: 6vh; }
+  .hero h1 {
+    font-family: var(--serif);
+    font-size: clamp(2.5rem, 5.5vw, 6.5rem);
+    font-weight: 400; line-height: 1.05;
+    margin-bottom: 2rem;
+    letter-spacing: -0.01em;
+  }
+  .hero .side {
+    font-family: var(--sans); font-size: 0.95rem; line-height: 1.8;
+    color: var(--muted); max-width: 42ch; font-weight: 300;
+  }
+  .hero-img-wrap {
+    height: 70vh; width: 100%; overflow: hidden;
+    position: relative; border-radius: 2px; margin-top: 4vh;
+  }
+  .hero-img {
+    width: 100%; height: 135%; object-fit: cover;
+    filter: brightness(0.92) contrast(1.05);
+  }
+
+  /* Philosophy Section */
+  .philosophy {
+    padding: 20vh 5vw;
+    display: grid; grid-template-columns: 1fr 2fr; gap: 5vw;
+    border-top: 1px solid var(--border);
+  }
+  .philosophy-text {
+    font-family: var(--serif); font-size: clamp(1.8rem, 3.2vw, 3.4rem);
+    line-height: 1.25; font-weight: 300;
+  }
+  .philosophy-text strong { font-style: italic; font-weight: 400; color: var(--accent); }
+
+  /* Project Index */
+  .index { padding: 12vh 5vw 18vh; }
+  .index-head {
+    display: grid; grid-template-columns: 80px 2fr 1fr 100px;
+    padding-bottom: 1.5rem; border-bottom: 1px solid var(--border);
+    font-family: var(--sans); font-size: 0.75rem;
+    text-transform: uppercase; letter-spacing: 2px; color: var(--muted);
+    margin-bottom: 2rem;
+  }
+  .index-row {
+    position: relative; border-bottom: 1px solid var(--border);
+    padding: 3rem 0; display: block; text-decoration: none; color: var(--text);
+  }
+  .index-content {
+    display: grid; grid-template-columns: 80px 2fr 1fr 100px; align-items: baseline;
+    position: relative; z-index: 2;
+  }
+  .index-row .num { font-family: var(--sans); font-size: 0.8rem; color: var(--muted); font-weight: 400; }
+  .index-row h3 { font-family: var(--serif); font-size: clamp(1.8rem, 3vw, 2.5rem); font-weight: 400; transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1); }
+  .index-row p { font-family: var(--sans); color: var(--muted); font-size: 0.9rem; font-weight: 300; margin-top: 0.5rem; }
+  .index-row .type, .index-row .year { font-family: var(--sans); font-size: 0.85rem; font-weight: 300; }
+  .index-row .year { text-align: right; }
+  
+  .index-img-wrapper {
+    width: 85%; height: 0; overflow: hidden;
+    margin: 0 auto;
+    transition: height 0.8s cubic-bezier(0.16, 1, 0.3, 1), margin 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+    position: relative; z-index: 1;
+  }
+  .index-img-wrapper img {
+    width: 100%; height: 500px; object-fit: cover;
+    transform: scale(1.12); transition: transform 1.6s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  /* Desktop Hover Interactions */
+  @media (hover: hover) {
+    .index-row:hover .index-img-wrapper { height: 500px; margin-top: 3rem; }
+    .index-row:hover .index-img-wrapper img { transform: scale(1); }
+    .index-row:hover h3 { transform: translateX(20px); color: var(--accent); }
+  }
+
+  /* Architectural Methodology */
+  .process {
+    padding: 18vh 5vw; background: #e3dfd7;
+    border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);
+  }
+  .process-header {
+    display: grid; grid-template-columns: 1fr 2fr; gap: 5vw; margin-bottom: 8vh;
+  }
+  .process-title {
+    font-family: var(--serif); font-size: clamp(2rem, 3.8vw, 3.8rem);
+    font-weight: 300; line-height: 1.1;
+  }
+  .process-grid {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 3vw;
+  }
+  .process-card {
+    border-top: 1px solid var(--border);
+    padding-top: 2rem;
+  }
+  .process-step {
+    font-family: var(--sans); font-size: 0.75rem; letter-spacing: 2px;
+    color: var(--accent); font-weight: 600; margin-bottom: 1.2rem; display: block;
+  }
+  .process-card h4 {
+    font-family: var(--serif); font-size: 1.7rem; font-weight: 400; margin-bottom: 0.8rem;
+  }
+  .process-card p {
+    font-family: var(--sans); font-size: 0.88rem; line-height: 1.8; color: var(--muted); font-weight: 300;
+  }
+
+  /* Leadership & Practice Profile */
+  .leadership {
+    padding: 18vh 5vw;
+    display: grid; grid-template-columns: 1fr 1fr; gap: 6vw; align-items: center;
+  }
+  .leadership-img-wrap {
+    position: relative; width: 100%; height: 70vh; overflow: hidden;
+  }
+  .leadership-img-wrap img {
+    width: 100%; height: 120%; object-fit: cover; filter: grayscale(100%) contrast(110%);
+  }
+  .leadership-content h2 {
+    font-family: var(--serif); font-size: clamp(2.2rem, 4vw, 4rem);
+    font-weight: 300; line-height: 1.1; margin-bottom: 2rem;
+  }
+  .leadership-content p {
+    font-family: var(--sans); font-size: 0.95rem; line-height: 1.85; color: var(--muted);
+    font-weight: 300; margin-bottom: 1.5rem;
+  }
+  .quote-block {
+    border-left: 2px solid var(--accent);
+    padding-left: 1.8rem; margin-top: 2.5rem;
+  }
+  .quote-block blockquote {
+    font-family: var(--serif); font-size: 1.5rem; font-style: italic; line-height: 1.4; color: var(--text);
+  }
+  .quote-block cite {
+    display: block; font-family: var(--sans); font-size: 0.75rem; text-transform: uppercase;
+    letter-spacing: 2px; color: var(--muted); margin-top: 0.8rem; font-style: normal;
+  }
+
+  /* Capabilities */
+  .capabilities {
+    padding: 18vh 5vw; background: var(--text); color: var(--bg);
+    display: grid; grid-template-columns: 1fr 1fr; gap: 6vw;
+  }
+  .capabilities .section-label { color: rgba(255,255,255,0.4); }
+  .cap-intro {
+    font-family: var(--serif); font-size: clamp(1.8rem, 3vw, 2.4rem); font-weight: 300; line-height: 1.3;
+  }
+  .cap-list { list-style: none; margin-top: 2rem; }
+  .cap-list li {
+    font-family: var(--serif); font-size: clamp(1.6rem, 2.5vw, 2.2rem);
+    padding: 1.5rem 0; border-bottom: 1px solid rgba(255,255,255,0.12);
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .cap-list li span { font-family: var(--sans); font-size: 0.75rem; font-weight: 400; text-transform: uppercase; letter-spacing: 1px; color: var(--accent); }
+
+  /* Recognition & Press */
+  .recognition {
+    padding: 18vh 5vw; border-bottom: 1px solid var(--border);
+  }
+  .rec-head {
+    display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 6vh;
+  }
+  .rec-head h2 { font-family: var(--serif); font-size: clamp(2.2rem, 4vw, 3rem); font-weight: 300; }
+  .rec-table { width: 100%; border-collapse: collapse; }
+  .rec-row {
+    border-bottom: 1px solid var(--border); padding: 2rem 0;
+    display: grid; grid-template-columns: 1fr 2fr 1.5fr 1fr; align-items: center;
+  }
+  .rec-row span { font-family: var(--sans); font-size: 0.85rem; font-weight: 300; color: var(--muted); }
+  .rec-row .rec-award { font-family: var(--serif); font-size: 1.5rem; color: var(--text); font-weight: 400; }
+
+  /* Journal & Insights */
+  .journal { padding: 18vh 5vw; }
+  .journal-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 4vw; margin-top: 6vh;
+  }
+  .journal-card { text-decoration: none; color: var(--text); display: block; }
+  .journal-img-wrap {
+    width: 100%; height: 360px; overflow: hidden; margin-bottom: 1.5rem; border-radius: 2px;
+  }
+  .journal-img-wrap img {
+    width: 100%; height: 100%; object-fit: cover; transition: transform 1.2s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .journal-card:hover .journal-img-wrap img { transform: scale(1.06); }
+  .journal-meta {
+    font-family: var(--sans); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 2px; color: var(--accent); margin-bottom: 0.8rem;
+  }
+  .journal-card h4 {
+    font-family: var(--serif); font-size: 1.7rem; font-weight: 400; line-height: 1.25;
+  }
+
+  /* Stats Section */
+  .stats {
+    padding: 15vh 5vw; display: grid; grid-template-columns: repeat(3, 1fr); gap: 3rem;
+    border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);
+  }
+  .stat-card { text-align: center; }
+  .stat-num {
+    font-family: var(--serif); font-size: clamp(3.8rem, 7vw, 5.5rem); font-weight: 300;
+    line-height: 1; margin-bottom: 1rem;
+  }
+  .stat-label {
+    font-family: var(--sans); font-size: 0.75rem; font-weight: 500;
+    text-transform: uppercase; letter-spacing: 1.5px; color: var(--muted);
+  }
+
+  /* CTA Section */
+  .cta-section {
+    padding: 20vh 5vw; text-align: center; display: flex; flex-direction: column; align-items: center;
+  }
+  .cta-section h2 {
+    font-family: var(--serif); font-size: clamp(2.4rem, 5vw, 6rem); font-weight: 300; line-height: 1.1; max-width: 22ch; margin-bottom: 3rem;
+  }
+  .cta-button {
+    display: inline-block; padding: 1.2rem 3rem; border: 1px solid var(--text);
+    font-family: var(--sans); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 2px;
+    text-decoration: none; color: var(--text); position: relative; overflow: hidden;
+    transition: color 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .cta-button::before {
+    content: ''; position: absolute; inset: 0; background: var(--text); transform: translateY(100%);
+    transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1); z-index: -1;
+  }
+  .cta-button:hover { color: var(--bg); }
+  .cta-button:hover::before { transform: translateY(0); }
+
+  /* Footer */
+  footer {
+    padding: 10vh 5vw 4vh; border-top: 1px solid var(--border);
+    display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 2rem;
+  }
+  .footer-col h5 { font-family: var(--sans); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 2px; color: var(--muted); margin-bottom: 1.5rem; }
+  .footer-col p { font-family: var(--serif); font-size: 1.3rem; line-height: 1.45; }
+  .footer-big {
+    grid-column: 1 / -1; font-family: var(--serif); font-size: clamp(3.5rem, 16vw, 17rem);
+    font-weight: 300; text-align: center; margin-top: 6vh; line-height: 0.8; letter-spacing: -0.02em;
+  }
+
+  /* ==========================================================================
+     RESPONSIVE BREAKPOINTS (MOBILE & TABLET FIXES)
+     ========================================================================== */
+  @media (max-width: 960px) {
+    header { padding: 1.5rem 6vw; }
+    nav { gap: 1.2rem; }
+    nav a { font-size: 0.7rem; }
+
+    .hero {
+      grid-template-columns: 1fr;
+      padding: 14vh 6vw 6vh;
+      min-height: auto;
+      gap: 2.5rem;
+    }
+    .hero-text-wrap { margin-top: 0; }
+    .hero-img-wrap { height: 45vh; margin-top: 0; }
+
+    .philosophy { padding: 12vh 6vw; grid-template-columns: 1fr; gap: 2rem; }
+    
+    .index { padding: 10vh 6vw; }
+    .index-head { display: none; }
+    .index-content { grid-template-columns: 1fr; gap: 0.4rem; }
+    .index-row { padding: 2rem 0; }
+    .index-row .year, .index-row .type, .index-row .num { font-size: 0.8rem; color: var(--muted); }
+    .index-row .year { text-align: left; }
+    
+    /* Touch devices always display a compact image block */
+    .index-img-wrapper {
+      width: 100%;
+      height: 240px !important;
+      margin-top: 1.5rem !important;
+    }
+    .index-img-wrapper img {
+      height: 240px;
+      transform: scale(1) !important;
+    }
+
+    .process { padding: 12vh 6vw; }
+    .process-header { grid-template-columns: 1fr; gap: 1.5rem; margin-bottom: 5vh; }
+    .process-grid { grid-template-columns: 1fr 1fr; gap: 2.5rem; }
+
+    .leadership { padding: 12vh 6vw; grid-template-columns: 1fr; gap: 3rem; }
+    .leadership-img-wrap { height: 45vh; }
+
+    .capabilities { padding: 12vh 6vw; grid-template-columns: 1fr; gap: 3rem; }
+
+    .recognition { padding: 12vh 6vw; }
+    .rec-head { flex-direction: column; align-items: flex-start; gap: 1rem; }
+    .rec-row { grid-template-columns: 1fr; gap: 0.4rem; padding: 1.5rem 0; }
+    .rec-row span:last-child { text-align: left; }
+
+    .journal { padding: 12vh 6vw; }
+    .journal-grid { grid-template-columns: 1fr; gap: 3rem; }
+    .journal-img-wrap { height: 260px; }
+
+    .stats { padding: 10vh 6vw; grid-template-columns: 1fr; gap: 2.5rem; }
+
+    .cta-section { padding: 12vh 6vw; }
+
+    footer { padding: 8vh 6vw 4vh; grid-template-columns: 1fr; gap: 2.5rem; }
+  }
+
+  @media (max-width: 600px) {
+    nav a:not(:last-child) { margin-right: 0.5rem; }
+    .process-grid { grid-template-columns: 1fr; }
+    .index-img-wrapper { height: 200px !important; }
+    .index-img-wrapper img { height: 200px; }
+  }
+</style>
+</head>
+<body>
+
+  <!-- Film Grain Overlay -->
+  <div class="noise"></div>
+
+  <!-- Dual Custom Cursor (Auto-hidden on Touch) -->
+  <div class="cursor-dot"></div>
+  <div class="cursor-ring"><span class="cursor-text">Explore</span></div>
+
+  <!-- Preloader -->
+  <div class="loader">
+    <div class="loader-brand">Vale & Partners</div> <!--[cite: 3] -->
+    <div class="loader-sub">Architecture & Urban Practice • Abuja</div> <!--[cite: 3] -->
+  </div>
+
+  <header>
+    <div class="brand">Vale & Partners</div> <!--[cite: 3] -->
+    <nav>
+      <a href="#work" class="hover-trigger">Portfolio</a>
+      <a href="#practice" class="hover-trigger">Practice</a>
+      <a href="#contact" class="hover-trigger">Contact</a>
+    </nav>
+  </header>
+
+  <!-- Hero Section -->
+  <section class="hero">
+    <div class="hero-text-wrap">
+      <h1 class="split-text">Structural clarity for buildings people actually want to be in.</h1> <!--[cite: 3] -->
+      <div class="side gsap-fade">An architecture and planning practice based in Abuja, working across residential, civic and commercial projects with an emphasis on local context and material honesty.</div> <!--[cite: 3] -->
+    </div>
+    <div class="hero-img-wrap">
+      <img src="https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&q=80&w=2000" class="hero-img" alt="Contemporary Architecture">
+    </div>
+  </section>
+
+  <!-- Philosophy Section -->
+  <section class="philosophy">
+    <div class="section-label">01 / Ethos</div>
+    <div class="philosophy-text split-text">
+      We believe that context dictates form. From the topography of the Nigerian landscape to the shifting patterns of tropical daylight, every structure we deliver is a <strong>calibrated response</strong> to its climate, crafted for permanence, tactile elegance, and human connection.
+    </div>
+  </section>
+
+  <!-- Selected Works Accordion -->
+  <section class="index" id="work">
+    <div class="section-label" style="margin-bottom: 3.5rem;">02 / Selected Works</div>
+    <div class="index-head">
+      <span>No.</span><span>Project</span><span>Type</span><span style="text-align:right">Year</span>
+    </div>
+    
+    <a href="#" class="index-row hover-trigger project-row">
+      <div class="index-content">
+        <div class="num">01</div>
+        <div>
+          <h3>Gwarinpa Residence</h3> <!--[cite: 3] -->
+          <p>Private villa, central courtyard plan, passive thermal ventilation</p> <!--[cite: 3] -->
+        </div>
+        <div class="type">Residential</div> <!--[cite: 3] -->
+        <div class="year">2025</div> <!--[cite: 3] -->
+      </div>
+      <div class="index-img-wrapper">
+        <img src="https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&q=80&w=1600" alt="Gwarinpa Residence">
+      </div>
+    </a>
+    
+    <a href="#" class="index-row hover-trigger project-row">
+      <div class="index-content">
+        <div class="num">02</div>
+        <div>
+          <h3>Utako Business Centre</h3> <!--[cite: 3] -->
+          <p>Commercial complex with responsive bronze brise-soleil facade</p> <!--[cite: 3] -->
+        </div>
+        <div class="type">Commercial</div> <!--[cite: 3] -->
+        <div class="year">2024</div> <!--[cite: 3] -->
+      </div>
+      <div class="index-img-wrapper">
+        <img src="https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&q=80&w=1600" alt="Utako Business Centre">
+      </div>
+    </a>
+
+    <a href="#" class="index-row hover-trigger project-row">
+      <div class="index-content">
+        <div class="num">03</div>
+        <div>
+          <h3>Kubwa Community Library</h3> <!--[cite: 3] -->
+          <p>Public educational sanctuary, rammed-earth thermal envelope</p> <!--[cite: 3] -->
+        </div>
+        <div class="type">Civic</div> <!--[cite: 3] -->
+        <div class="year">2023</div> <!--[cite: 3] -->
+      </div>
+      <div class="index-img-wrapper">
+        <img src="https://images.unsplash.com/photo-1541123356219-284ebe98ae3b?auto=format&fit=crop&q=80&w=1600" alt="Kubwa Community Library">
+      </div>
+    </a>
+
+    <a href="#" class="index-row hover-trigger project-row">
+      <div class="index-content">
+        <div class="num">04</div>
+        <div>
+          <h3>Jabi Waterfront Apartments</h3> <!--[cite: 3] -->
+          <p>12-unit luxury residential development overlooking Jabi Lake</p> <!--[cite: 3] -->
+        </div>
+        <div class="type">Residential</div> <!--[cite: 3] -->
+        <div class="year">2023</div> <!--[cite: 3] -->
+      </div>
+      <div class="index-img-wrapper">
+        <img src="https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&q=80&w=1600" alt="Jabi Waterfront">
+      </div>
+    </a>
+  </section>
+
+  <!-- Architectural Methodology Section -->
+  <section class="process">
+    <div class="process-header">
+      <div class="section-label">03 / Methodology</div>
+      <div class="process-title">Rigor in thought. Precision in execution.</div>
+    </div>
+    <div class="process-grid">
+      <div class="process-card">
+        <span class="process-step">PHASE 01</span>
+        <h4>Site Synthesis</h4>
+        <p>Microclimate mapping, solar trajectory analysis, and geological assessments precede all sketching to anchor every concept in space.</p>
+      </div>
+      <div class="process-card">
+        <span class="process-step">PHASE 02</span>
+        <h4>Volumetric Iteration</h4>
+        <p>Testing spatial flow, light penetration, and structural grids through physical timber models and real-time lighting simulations.</p>
+      </div>
+      <div class="process-card">
+        <span class="process-step">PHASE 03</span>
+        <h4>Material Detailing</h4>
+        <p>Specifying locally sourced stone, board-formed concrete, and timber joinery engineered to age gracefully under tropical conditions.</p>
+      </div>
+      <div class="process-card">
+        <span class="process-step">PHASE 04</span>
+        <h4>Site Administration</h4>
+        <p>Active, uncompromising oversight on site to ensure structural drawings translate into exact architectural reality.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Leadership Section -->
+  <section class="leadership" id="practice">
+    <div class="leadership-img-wrap">
+      <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=1200" alt="Principal Architect">
+    </div>
+    <div class="leadership-content">
+      <div class="section-label" style="margin-bottom: 2rem;">04 / Practice Profile</div>
+      <h2>Designed for endurance, built for life.</h2>
+      <p>Founded in Abuja, Vale & Partners operates as a boutique architectural research and design laboratory[cite: 3]. We deliberately keep our project volume focused, ensuring senior leadership involvement across every stage of design and construction[cite: 3].</p>
+      <p>Our work spans private residences, commercial hubs, and civic infrastructure[cite: 3]. We measure success not by transient stylistic trends, but by how naturally our buildings inhabit their surroundings decades after completion.</p>
+      
+      <div class="quote-block">
+        <blockquote>"Architecture is the art of giving quiet structural dignity to human daily routine."</blockquote>
+        <cite>— Principal Director, Vale & Partners</cite> <!--[cite: 3] -->
+      </div>
+    </div>
+  </section>
+
+  <!-- Capabilities Section -->
+  <section class="capabilities">
+    <div>
+      <div class="section-label" style="margin-bottom: 2rem;">05 / Expertise</div>
+      <div class="cap-intro">Comprehensive architectural and masterplanning services tailored to complex urban environments.</div>
+    </div>
+    <div>
+      <ul class="cap-list">
+        <li>Urban Masterplanning <span>01</span></li>
+        <li>Architectural Design <span>02</span></li>
+        <li>Interior Architecture <span>03</span></li>
+        <li>Environmental Strategy <span>04</span></li>
+        <li>Project Administration <span>05</span></li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- Recognition Section -->
+  <section class="recognition">
+    <div class="rec-head">
+      <div>
+        <div class="section-label" style="margin-bottom: 1rem;">06 / Recognition</div>
+        <h2>Selected Honors</h2>
+      </div>
+      <div class="section-label">2020 — 2026</div>
+    </div>
+    <table class="rec-table">
+      <tr class="rec-row">
+        <span>2025</span>
+        <span class="rec-award">West African Architecture Excellence</span>
+        <span>Gwarinpa Residence</span> <!--[cite: 3] -->
+        <span style="text-align:right">Winner</span>
+      </tr>
+      <tr class="rec-row">
+        <span>2024</span>
+        <span class="rec-award">Civic Space Design Award</span>
+        <span>Kubwa Community Library</span> <!--[cite: 3] -->
+        <span style="text-align:right">First Place</span>
+      </tr>
+      <tr class="rec-row">
+        <span>2023</span>
+        <span class="rec-award">Sustainable Commercial Facility</span>
+        <span>Utako Business Centre</span> <!--[cite: 3] -->
+        <span style="text-align:right">Commendation</span>
+      </tr>
+    </table>
+  </section>
+
+  <!-- Journal & Insights Section -->
+  <section class="journal">
+    <div class="section-label">07 / Perspectives</div>
+    <div style="display: flex; justify-content: space-between; align-items: baseline; margin-top: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+      <h2 style="font-family: var(--serif); font-size: clamp(2.2rem, 4vw, 3rem); font-weight: 300;">Architectural Insights</h2>
+      <a href="#" style="font-family: var(--sans); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 2px; color: var(--text); text-decoration: none;">View Index →</a>
+    </div>
+    
+    <div class="journal-grid">
+      <a href="#" class="journal-card hover-trigger">
+        <div class="journal-img-wrap">
+          <img src="https://images.unsplash.com/photo-1513694203232-719a280e022f?auto=format&fit=crop&q=80&w=1000" alt="Tropical Concrete">
+        </div>
+        <div class="journal-meta">Essays • 6 Min Read</div>
+        <h4>Thermal Massing & Passive Cooling in West African Architecture</h4>
+      </a>
+
+      <a href="#" class="journal-card hover-trigger">
+        <div class="journal-img-wrap">
+          <img src="https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&q=80&w=1000" alt="Light Study">
+        </div>
+        <div class="journal-meta">Research • 4 Min Read</div>
+        <h4>Subtle Light: Designing Shadow and Louvers for Abuja’s High Sun</h4>
+      </a>
+
+      <a href="#" class="journal-card hover-trigger">
+        <div class="journal-img-wrap">
+          <img src="https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&q=80&w=1000" alt="Urban Density">
+        </div>
+        <div class="journal-meta">Urbanism • 8 Min Read</div>
+        <h4>The Evolution of Mixed-Use Commercial Spaces in FCT</h4>
+      </a>
+    </div>
+  </section>
+
+  <!-- Key Metrics -->
+  <div class="stats">
+    <div class="stat-card">
+      <div class="stat-num counter" data-target="40">0</div> <!--[cite: 3] -->
+      <div class="stat-label">Projects delivered</div> <!--[cite: 3] -->
+    </div>
+    <div class="stat-card">
+      <div class="stat-num counter" data-target="12">0</div> <!--[cite: 3] -->
+      <div class="stat-label">Years practicing</div> <!--[cite: 3] -->
+    </div>
+    <div class="stat-card">
+      <div class="stat-num counter" data-target="6">0</div> <!--[cite: 3] -->
+      <div class="stat-label">States worked in</div> <!--[cite: 3] -->
+    </div>
+  </div>
+
+  <!-- Commission Call to Action Section -->
+  <section class="cta-section">
+    <div class="section-label" style="margin-bottom: 2rem;">Initiate a Conversation</div>
+    <h2>Have a project or site in mind? Let’s shape it together.</h2>
+    <a href="mailto:hello@valepartners.ng" class="cta-button hover-trigger">Start a Commission</a> <!--[cite: 3] -->
+  </section>
+
+  <!-- Footer -->
+  <footer id="contact">
+    <div class="footer-col">
+      <h5>Studio</h5>
+      <p>Central Business District<br>Abuja, FCT, Nigeria</p> <!--[cite: 3] -->
+    </div>
+    <div class="footer-col">
+      <h5>Inquiries</h5>
+      <p>hello@valepartners.ng</p> <!--[cite: 3] -->
+      <p>+234 803 000 0000</p> <!--[cite: 3] -->
+    </div>
+    <div class="footer-col">
+      <h5>Network</h5>
+      <p><a href="#" style="color:inherit; text-decoration:none;">Instagram</a></p>
+      <p><a href="#" style="color:inherit; text-decoration:none;">LinkedIn</a></p>
+      <p><a href="#" style="color:inherit; text-decoration:none;">ArchDaily</a></p>
+    </div>
+    <div class="footer-big">VALE</div>
+  </footer>
+
+  <!-- Scripts -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+  <script src="https://unpkg.com/split-type"></script>
+  <script src="https://cdn.jsdelivr.net/gh/studio-freight/lenis@1.0.29/bundled/lenis.min.js"></script>
+
+  <script>
+    gsap.registerPlugin(ScrollTrigger);
+
+    // Mobile Detection
+    const isMobile = window.innerWidth <= 960 || 'ontouchstart' in window;
+
+    // 1. Lenis Smooth Scroll Setup (Optimized for Mobile Touch)
+    const lenis = new Lenis({
+      duration: isMobile ? 0.8 : 1.2,
+      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+      direction: 'vertical',
+      smooth: true,
+      smoothTouch: false, // Allows native mobile touch momentum without drag lag
+      touchMultiplier: 1.5
+    });
+
+    function raf(time) { lenis.raf(time); requestAnimationFrame(raf); }
+    requestAnimationFrame(raf);
+
+    lenis.on('scroll', ScrollTrigger.update);
+    gsap.ticker.add((time) => { lenis.raf(time * 1000); });
+    gsap.ticker.lagSmoothing(0);
+
+    // 2. Custom Cursor Tracking (Only Active on Pointer Fine Devices)
+    if (!isMobile) {
+      const cursorDot = document.querySelector('.cursor-dot');
+      const cursorRing = document.querySelector('.cursor-ring');
+      const hoverTriggers = document.querySelectorAll('.hover-trigger');
+
+      window.addEventListener('mousemove', (e) => {
+        gsap.set(cursorDot, { x: e.clientX, y: e.clientY });
+        gsap.to(cursorRing, { x: e.clientX, y: e.clientY, duration: 0.15, ease: "power2.out" });
+      });
+
+      hoverTriggers.forEach(trigger => {
+        trigger.addEventListener('mouseenter', () => document.body.classList.add('hovered'));
+        trigger.addEventListener('mouseleave', () => document.body.classList.remove('hovered'));
+      });
+    }
+
+    // 3. Split Text & Preloader Animation Timeline
+    const textToSplit = new SplitType('.split-text', { types: 'lines, words' });
+    
+    const tlLoader = gsap.timeline();
+    tlLoader.to('.loader-brand', {
+      clipPath: "polygon(0 0%, 100% 0%, 100% 100%, 0% 100%)", duration: 1.2, ease: "power4.inOut"
+    })
+    .to('.loader-sub', { opacity: 1, duration: 0.5 }, "-=0.3")
+    .to('.loader', { yPercent: -100, duration: 0.9, ease: "expo.inOut" }, "+=0.2")
+    .from('.hero-img-wrap', { clipPath: "inset(100% 0% 0% 0%)", duration: 1.2, ease: "power4.out" }, "-=0.3")
+    .from('.hero-img', { scale: 1.2, duration: 1.4, ease: "power3.out" }, "-=1.2")
+    .from('.hero .word', { y: 25, opacity: 0, duration: 0.7, stagger: 0.03, ease: "power3.out" }, "-=0.8")
+    .from('.gsap-fade', { opacity: 0, y: 15, duration: 0.8, ease: "power2.out" }, "-=0.4");
+
+    // 4. Parallax Scroll Effects (Subtle on Mobile)
+    gsap.to('.hero-img', {
+      yPercent: isMobile ? 10 : 20,
+      ease: "none",
+      scrollTrigger: { trigger: ".hero", start: "top top", end: "bottom top", scrub: true }
+    });
+
+    gsap.to('.leadership-img-wrap img', {
+      yPercent: isMobile ? -8 : -15,
+      ease: "none",
+      scrollTrigger: { trigger: ".leadership", start: "top bottom", end: "bottom top", scrub: true }
+    });
+
+    // 5. Scroll Reveals for Philosophy Text
+    const philosophyWords = document.querySelectorAll('.philosophy-text .word');
+    gsap.from(philosophyWords, {
+      opacity: 0.2, duration: 0.4, stagger: 0.03, ease: "power1.out",
+      scrollTrigger: { trigger: ".philosophy", start: "top 80%", end: "bottom 70%", scrub: true }
+    });
+
+    // 6. Methodology Step Reveals
+    gsap.from('.process-card', {
+      y: 30, opacity: 0, duration: 0.8, stagger: 0.1, ease: "power3.out",
+      scrollTrigger: { trigger: ".process-grid", start: "top 85%" }
+    });
+
+    // 7. Capabilities List Stagger
+    gsap.from('.cap-list li', {
+      y: 30, opacity: 0, duration: 0.8, stagger: 0.1, ease: "power3.out",
+      scrollTrigger: { trigger: ".capabilities", start: "top 80%" }
+    });
+
+    // 8. Journal Cards Stagger
+    gsap.from('.journal-card', {
+      y: 40, opacity: 0, duration: 0.8, stagger: 0.15, ease: "power3.out",
+      scrollTrigger: { trigger: ".journal-grid", start: "top 85%" }
+    });
+
+    // 9. Stats Counter Animation
+    const stats = document.querySelectorAll('.counter');
+    stats.forEach(stat => {
+      const target = parseInt(stat.getAttribute('data-target'));
+      ScrollTrigger.create({
+        trigger: ".stats", start: "top 85%",
+        onEnter: () => {
+          gsap.to(stat, {
+            innerHTML: target, duration: 2, snap: { innerHTML: 1 }, ease: "power3.out",
+            onUpdate: function() { if (target === 40) stat.innerHTML = Math.round(this.targets()[0].innerHTML) + "+"; }
+          });
+        }, once: true
+      });
+    });
+  </script>
+</body>
+</html>
